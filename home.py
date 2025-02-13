@@ -1,6 +1,8 @@
 import streamlit as st
 import pymongo
 import openai
+import pickle
+from bson.binary import Binary
 
 user = st.secrets["USER"]
 password = st.secrets["PASSWORD"]
@@ -20,14 +22,29 @@ st.divider()
 
 st.subheader("Answer these questions and get matched to a potential cofounder")
 
-problem_industry = st.text_input("What problem or industry excites you the most to work on?")
-skills = st.text_input("What are your primary technical or business skills? (e.g., coding, product design, marketing, finance, sales)")
-cofounder_skills = st.text_input("What specific skills, expertise, or knowledge do you want your ideal co-founder to bring to the table?")
-funding = st.text_input("Would you rather bootstrap, raise VC funding, or take another approach?")
-impact = st.text_input("How important is financial success vs. impact on society?")
-commitment = st.text_input("Are you willing to go full-time on a startup, or are you looking for a side project initially?")
-work_environment = st.text_input("What is your preferred work environment? (Remote, hybrid, in-office, co-working spaces)")
-ethics = st.text_input("What are your ethical non-negotiables in business?")
+name = st.text_input["What is your name?"]
+problem_industry = st.text_area("What problem or industry excites you the most to work on?")
+skills = st.text_area("What are your primary technical or business skills? (e.g., coding, product design, marketing, finance, sales)")
+cofounder_skills = st.text_area("What specific skills, expertise, or knowledge do you want your ideal co-founder to bring to the table?")
+funding = st.text_area("Would you rather bootstrap, raise VC funding, or take another approach?")
+impact = st.text_area("How important is financial success vs. impact on society?")
+commitment = st.text_area("Are you willing to go full-time on a startup, or are you looking for a side project initially?")
+work_environment = st.text_area("What is your preferred work environment? (Remote, hybrid, in-office, co-working spaces)")
+ethics = st.text_area("What are your ethical non-negotiables in business?")
+
+def get_embedding(text):
+  answer = client.embeddings.create({
+    model: "text-embedding-3-small",
+    input: text,
+  })
+  return answer.data[0].embedding
+
+def store_answer(answer, embedding):
+  result = collection.insert_one({
+    "answers": answer,
+    "embedding": Binary(pickle.dumps(embedding))
+  })
+  return result.inserted_id
 
 if st.button("Submit"):
   # TODO: recommendation function
