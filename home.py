@@ -2,6 +2,7 @@ import streamlit as st
 import pymongo
 import openai
 import pickle
+from sklearn.metrics.pairwise import cosine_similarity
 from bson.binary import Binary
 
 user = st.secrets["USER"]
@@ -45,6 +46,21 @@ def store_answer(answer, embedding):
     "embedding": Binary(pickle.dumps(embedding))
   })
   return result.inserted_id
+
+def find_match(current_user_id, current_embedding):
+  all_answers = list(collection.find())
+  similarities = []
+
+  for document in all_answers:
+    if document['_id'] == current_user_id:
+      continue
+    stored_embedding = pickle.loads(document["embedding"])
+    similarity = cosine_similarity([current_embedding], [stored_embedding])[0][0]
+    similarities.append(similarity, document["responses"])
+  
+  similarities.sort(reverse=True, key=lambda x:x[0])
+
+  return similarities[0][1] if similarities else None
 
 if st.button("Submit"):
   # TODO: recommendation function
