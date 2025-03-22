@@ -10,3 +10,12 @@ A simple recommendation system, built with:
 ```bash
 streamlit run home.py
 ```
+
+## Environment variables
+```bash
+# In .streamlit/secrets.toml:
+OPENAI_API_KEY = 
+USER = 
+PASSWORD = 
+URI_URL = 
+```
